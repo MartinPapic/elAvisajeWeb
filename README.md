@@ -1,307 +1,278 @@
 # El Avisaje 🌋🗺️
 
-**El Avisaje** es una plataforma digital de turismo y cultura enfocada inicialmente en la **Provincia de Llanquihue (Chile)**, con proyección de escalar a nivel regional y nacional. Su objetivo es **visibilizar eventos, actividades y hitos territoriales** mediante una experiencia centrada en el mapa, combinando información georreferenciada con contenidos editoriales.
+Plataforma de turismo y agenda territorial enfocada en la **Provincia de Llanquihue**, diseñada para visibilizar eventos culturales, turísticos y comunitarios mediante un **mapa interactivo** y **contenidos editoriales curados**.
 
-La plataforma integra:
-
-* Un **mapa interactivo** con eventos (pines) filtrables por rango de fechas.
-* **Tarjetas (cards)** asociadas a cada evento.
-* **Entradas tipo blog/noticia** para ampliar la información de cada evento.
-* Un **CMS desacoplado** que permite a editores no técnicos gestionar contenido.
-
-Este repositorio guía el desarrollo técnico del proyecto y sirve como referencia para el el entorno de desarrollo.
+El Avisaje no es un calendario automático: es una **plataforma editorial territorial**, donde los eventos son **propuestos por la comunidad**, **validados manualmente** y luego publicados con criterios de relevancia, veracidad y utilidad pública.
 
 ---
 
-## 🎯 Visión del producto
+## 🎯 Propósito
 
-El Avisaje busca convertirse en una **infraestructura digital territorial**:
-
-* Útil para turistas, residentes y gestores culturales.
-* Capaz de articular información dispersa (eventos, ferias, festivales, actividades locales).
-* Escalable en cobertura geográfica y tipos de contenido.
-
-La experiencia principal es el **mapa como interfaz**, complementado con contenido editorial que da contexto, relato y profundidad a cada evento.
+* Centralizar eventos relevantes del territorio en un solo lugar confiable
+* Facilitar la planificación turística y cultural
+* Visibilizar iniciativas locales que no siempre aparecen en plataformas masivas
+* Construir memoria territorial a través de contenidos editoriales
 
 ---
 
-## 🧱 Stack tecnológico
+## 🧭 Alcance
 
-### Frontend
-
-* **React + Next.js (App Router)**
-* **MapLibre GL JS** para mapas interactivos
-* **TypeScript**
-* **Tailwind CSS** (o similar) para UI
-
-### CMS
-
-* **Sanity.io** como Headless CMS
-
-  * Gestión de eventos (pines del mapa)
-  * Gestión de cards
-  * Entradas de blog / noticias
-  * Campos geoespaciales y fechas
-
-### Arquitectura
-
-* Patrón **MVVM (Model–View–ViewModel)** adaptado a React
-* Separación clara entre:
-
-  * lógica de dominio
-  * estado
-  * presentación
+* **Fase 1:** Provincia de Llanquihue
+* **Fase 2:** Región de Los Lagos
+* **Fase 3:** Otras regiones de Chile
 
 ---
 
-## 🧠 Patrón de diseño: MVVM en React
+## 👥 Usuarios objetivo
 
-El proyecto implementa una adaptación de **MVVM** para mantener escalabilidad, testabilidad y claridad.
+* Residentes locales
+* Turistas nacionales e internacionales
+* Organizadores de eventos
+* Municipalidades y corporaciones culturales
+
+---
+
+## 🧩 Funcionalidades principales
+
+* Mapa interactivo con eventos geolocalizados
+* Filtro por rango de fechas y categorías
+* Fichas descriptivas de cada evento (blog)
+* Envío público de eventos mediante formulario
+* Curaduría y validación editorial manual
+* Eventos destacados (feature premium)
+
+---
+
+## 🏷️ Categorías de eventos
+
+* Música y conciertos
+* Artes escénicas (teatro, danza, circo)
+* Arte y exposiciones
+* Gastronomía y ferias costumbristas
+* Naturaleza y actividades al aire libre
+* Deportes y recreación
+* Educación, charlas y talleres
+* Fiestas tradicionales y religiosas
+* Actividades familiares
+* Comunidad y encuentros locales
+
+---
+
+## 🧠 Arquitectura técnica
+
+### Stack
+
+* **Frontend:** React 19 + Next.js 16 (App Router)
+* **Mapa:** MapLibre GL JS
+* **CMS / Backend editorial:** Sanity v5
+* **UI Components:** shadcn/ui + Radix UI primitives
+* **Styling:** Tailwind CSS v4
+* **Patrón:** MVVM (Model–View–ViewModel)
+* **Hosting:** Serverless (ISR + caching)
+* **Lenguaje:** TypeScript 5
+
+---
+
+## 🧱 Patrón MVVM aplicado
 
 ### Model
 
-Representa los datos puros del dominio:
-
-* `Event`
-* `Location`
-* `DateRange`
-* `Post`
-
-Estos modelos reflejan la estructura proveniente de Sanity, pero desacoplados del CMS.
+* Schemas de Sanity (`src/sanity/schemaTypes/`)
+* Queries GROQ (`src/services/sanityService.ts`)
+* Tipos de dominio (`src/models/index.ts`)
 
 ### ViewModel
 
-Encapsula la lógica de estado y negocio:
-
-* Fetch de datos desde Sanity
-* Transformación de datos (fechas, filtros, clusters, etc.)
-* Manejo de filtros por rango de fecha
-* Estado del mapa (zoom, bounds, evento activo)
-
-Ejemplos:
-
-* `useEventsViewModel()`
-* `useMapViewModel()`
-* `useEventDetailViewModel(slug)`
+* Lógica de filtros y transformación de datos
+* Manejo de estado del mapa (`src/viewmodels/`)
+* Conexión entre UI y datos
 
 ### View
 
-Componentes React **puros y declarativos**:
-
-* `MapView`
-* `EventCard`
-* `EventPin`
-* `EventPage`
-
-Las vistas **no contienen lógica de negocio**, solo consumen props del ViewModel.
+* Páginas Next.js (`src/app/`)
+* Componentes UI (`src/components/`, `src/views/`)
+* Mapa y tarjetas de eventos
 
 ---
 
-## 🗺️ Mapa de eventos
+## 🧭 Flujo de envío de eventos
 
-* Implementado con **MapLibre**
-* Pines generados dinámicamente desde Sanity
-* Cada pin representa un evento con:
-
-  * coordenadas
-  * fecha(s)
-  * categoría
-
-### Funcionalidades clave
-
-* Filtro por **rango de fechas**
-* Click en pin → abre card/resumen
-* Navegación a página de detalle del evento
-* Preparado para clustering en etapas posteriores
+1. Usuario envía evento mediante formulario público (`/proponer`)
+2. Prevalidación en cliente (UX)
+3. Envío a endpoint seguro (`/api/events/submit`)
+4. Validación server-side + defensas anti-spam
+5. Creación del evento en Sanity como **draft** (no publicado)
+6. Revisión editorial manual en Sanity Studio
+7. Publicación mediante botón "Publish" (solo eventos aprobados aparecen en el mapa)
 
 ---
 
-## 📰 Sistema editorial (Sanity)
+## 🔐 Seguridad y control
 
-Sanity actúa como el **panel de control** del proyecto.
-
-### Tipos de contenido principales
-
-#### Event
-
-* Título
-* Slug
-* Descripción corta (card)
-* Contenido largo (blog)
-* Fecha inicio / fecha término
-* Ubicación (GeoPoint)
-* Imagen destacada
-* Categoría
-
-#### Post / Noticia
-
-* Título
-* Slug
-* Contenido editorial
-* Evento relacionado (opcional)
-* Fecha de publicación
-
-Sanity permite:
-
-* Edición en tiempo real
-* Previsualización
-* Control de permisos
-* Escalabilidad futura (multi-región)
+* Sanity **nunca** es accesible directamente desde el cliente para escritura
+* Tokens de escritura solo en el servidor
+* Campos `submittedBy` y `submittedAt` de solo lectura
+* Validación estricta de datos en API route
+* Sistema de drafts de Sanity para moderación
 
 ---
 
-## 🧭 Rutas principales (Next.js)
+## 📊 Estados de evento (Draft/Published System)
 
-* `/` → Mapa con eventos activos
-* `/eventos/[slug]` → Página descriptiva del evento
-* `/noticias` → Listado editorial
-* `/noticias/[slug]` → Entrada de blog
+El Avisaje usa el **sistema nativo de drafts de Sanity**:
 
-Preparado para:
+* **Draft (borrador)**: Evento enviado desde formulario público, pendiente de revisión
+* **Published (publicado)**: Evento aprobado y visible en el mapa público
+* Solo los eventos **publicados** se muestran en el sitio
 
-* `/region/[slug]`
-* `/categoria/[slug]`
+> **Nota**: No usamos campos custom `status` o `visibility`. Sanity maneja esto automáticamente.
 
 ---
 
-## 📐 Principios de diseño
+## 💰 Estrategia de monetización (progresiva)
 
-* **Mapa primero** (map-first UX)
-* Contenido editorial como capa de profundidad
-* Mobile-first
-* Accesible y performante
-* Pensado como producto cívico-cultural, no solo turístico
+* Eventos destacados (pin y card prioritaria)
+* Planes mensuales para organizadores
+* Contenido patrocinado claramente etiquetado
+* Convenios institucionales
 
----
-
-## 🚀 Escalabilidad futura
-
-* Nuevas regiones y capas territoriales
-* Usuarios colaboradores
-* Reportes ciudadanos
-* Integración con datos municipales o culturales
-* Dashboards de actividad territorial
+La monetización **no interfiere** con la curaduría editorial.
 
 ---
 
-## 🧩 User Stories
+## 🧪 Escalabilidad (6 meses)
 
-Las siguientes *user stories* traducen los requerimientos del sistema a necesidades concretas de usuarios y stakeholders. Sirven como base para backlog, priorización de MVP y diseño de funcionalidades.
-
----
-
-### 👥 Clientes
-
-**US-01 — Descubrimiento por mapa**
-Como **usuario**, quiero **ver un mapa con eventos cercanos**, para **descubrir rápidamente qué está ocurriendo**.
-
-**US-02 — Filtro temporal**
-Como **usuario**, quiero **filtrar eventos por rango de fechas**, para **planificar actividades**.
-
-**US-03 — Información esencial del evento**
-Como **usuario**, quiero **ver información clave al interactuar con un pin o card**, para **decidir rápidamente**.
-
-**US-04 — Profundización editorial**
-Como **usuario**, quiero **una página descriptiva del evento**, para **entender su contexto**.
-
-**US-05 — Edición sin fricción**
-Como **editor**, quiero **crear y editar eventos desde un CMS**, para **mantener información actualizada**.
+* Escritura controlada, lectura abierta
+* Queries siempre filtradas por fecha y bounding box
+* Cache e ISR para reducir carga en Sanity
+* Sin backend persistente ni base de datos adicional
 
 ---
 
-### 🥊 Competencia
+## 📌 Principios editoriales
 
-**US-06 — Mapa como interfaz principal**
-Como **usuario**, quiero que **el mapa sea la vista principal**, para **no depender de listados**.
-
-**US-07 — Curaduría territorial**
-Como **usuario**, quiero **eventos relevantes y contextualizados**, para **evitar ruido**.
-
-**US-08 — Enfoque hiperlocal**
-Como **usuario**, quiero **ver eventos de la Provincia de Llanquihue**, para **sentir pertenencia territorial**.
+* Veracidad antes que volumen
+* Relevancia territorial
+* Transparencia en contenidos patrocinados
+* Prioridad a iniciativas locales
 
 ---
 
-### 🗃️ Datos
+## 🚀 Getting Started
 
-**US-09 — Datos confiables**
-Como **sistema**, quiero **una fuente única de verdad**, para **evitar inconsistencias**.
+### 1. Requisitos previos
 
-**US-10 — Georreferenciación nativa**
-Como **editor**, quiero **asignar coordenadas y fechas**, para **visualizar eventos correctamente**.
+* Node.js 18+ (recomendado: 20+)
+* npm o pnpm
 
-**US-11 — Desacople frontend–CMS**
-Como **desarrollador**, quiero **consumir datos desacoplados**, para **escalar el sistema**.
+### 2. Instalación
+
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd elAvisajeWeb
+
+# Instalar dependencias
+npm install
+```
+
+### 3. Variables de Entorno
+
+Crea un archivo `.env.local` en la raíz del proyecto con tus credenciales de Sanity:
+
+```bash
+NEXT_PUBLIC_SANITY_PROJECT_ID="tu_project_id"
+NEXT_PUBLIC_SANITY_DATASET="production"
+NEXT_PUBLIC_SANITY_API_VERSION="2024-01-01"
+```
+
+> **Nota**: Puedes obtener estas credenciales creando un proyecto en [sanity.io](https://www.sanity.io)
+
+### 4. Ejecutar el proyecto
+
+```bash
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) para ver el mapa.
 
 ---
 
-### 🚀 Innovación
+## 📰 Panel de Administración (CMS)
 
-**US-12 — Estado del mapa controlado**
-Como **usuario**, quiero **interacciones fluidas con el mapa**, para **explorar sin fricción**.
+El proyecto incluye un **Sanity Studio** embebido para gestionar el contenido.
 
-**US-13 — Arquitectura mantenible**
-Como **desarrollador**, quiero **separar vistas, lógica y modelos**, para **mantener el sistema**.
+1. Ve a `http://localhost:3000/studio`
+2. Inicia sesión con tu cuenta de Sanity
+3. **Importante**: Asegúrate de agregar `http://localhost:3000` a los **CORS Origins** en tu proyecto de Sanity (ver [sanity.io/manage](https://www.sanity.io/manage))
 
-**US-14 — Relato territorial**
-Como **usuario**, quiero **narrativa y contexto**, para **comprender el territorio**.
+### Funcionalidades del CMS
 
----
-
-### 💎 Valor
-
-**US-15 — Decisión informada**
-Como **usuario**, quiero **comparar eventos cercanos**, para **elegir mejor**.
-
-**US-16 — Visibilidad local**
-Como **organizador**, quiero **visibilidad en el mapa**, para **llegar a público relevante**.
-
-**US-17 — Escalabilidad del proyecto**
-Como **responsable**, quiero **expandir a otras regiones**, para **maximizar impacto**.
+* **Eventos**: Crea pines en el mapa con fecha, categoría y descripción
+* **Geocodificación Gratuita**: Busca direcciones (e.g., "Puerto Varas") y obtén coordenadas automáticamente usando OpenStreetMap
+* **Categorías**: Define tipos de eventos (Música, Feria, Gastronomía) y sus colores
+* **Tags**: Etiquetas adicionales (Gratuito, Familiar, Pet Friendly)
+* **Drafts**: Revisa y publica eventos enviados desde el formulario público
 
 ---
 
-## 🗺️ Mapeo de User Stories a Arquitectura
+## 🗂️ Estructura del proyecto
 
-Esta sección conecta cada *user story* con componentes, ViewModels y datos, permitiendo una implementación directa.
+```
+src/
+├── app/
+│   ├── page.tsx                  # Homepage con mapa
+│   ├── proponer/page.tsx         # Formulario público de envío
+│   ├── studio/[[...index]]/page.tsx  # Sanity Studio
+│   └── api/events/submit/route.ts    # API para envío de eventos
+├── components/
+│   ├── EventCard.tsx
+│   ├── FilterPanel.tsx
+│   ├── EventSubmissionForm.tsx
+│   └── ui/                       # Componentes shadcn/ui
+├── views/
+│   └── map/                      # Componentes del mapa
+├── viewmodels/                   # Lógica de negocio
+├── models/
+│   └── index.ts                  # Tipos TypeScript
+├── services/
+│   └── sanityService.ts          # Queries a Sanity
+├── lib/
+│   └── sanity.ts                 # Cliente de Sanity
+└── sanity/
+    ├── schemaTypes/              # Schemas de Sanity
+    ├── components/               # Componentes custom del Studio
+    └── sanity.config.ts
+```
 
-### Vista principal (Mapa)
+---
 
-* **US-01, US-06, US-08, US-12, US-15**
+## 🏗️ Roadmap
 
-  * View: `MapView`, `EventPin`, `EventCard`
-  * ViewModel: `useMapViewModel`, `useEventsViewModel`
-  * Datos: `Event`, `GeoPoint`, `DateRange`
+* [x] Mapa Interactivo Básico
+* [x] Integración con Sanity CMS
+* [x] Detalle de Eventos
+* [x] Búsqueda de Direcciones (Geocoding)
+* [x] Filtros por Fecha y Categoría
+* [x] Formulario público de envío
+* [x] Sistema de drafts/publicación
+* [ ] Clustering de pines
+* [ ] Eventos destacados (premium)
+* [ ] Modo Oscuro
+* [ ] Notificaciones por email
+* [ ] Extensión a Región de Los Lagos
 
-### Filtros y exploración
+---
 
-* **US-02, US-07**
+## 🚀 Estado del proyecto
 
-  * View: `DateRangeFilter`, `CategoryFilter`
-  * ViewModel: `useFiltersViewModel`
-  * Datos: `DateRange`, `Category`
+En desarrollo — enfocado en construir un MVP sólido, seguro y escalable, con énfasis en valor territorial y sostenibilidad a mediano plazo.
 
-### Detalle de evento / narrativa
+---
 
-* **US-03, US-04, US-14**
+## 📄 Licencia
 
-  * View: `EventPage`, `EventHeader`, `EventContent`
-  * ViewModel: `useEventDetailViewModel`
-  * Datos: `Event`, `Post`
-
-### Sistema editorial (CMS)
-
-* **US-05, US-09, US-10**
-
-  * CMS: Sanity (schemas `event`, `post`, `category`)
-  * Datos: `GeoPoint`, `DateRange`, `Slug`
-
-### Arquitectura y escalabilidad
-
-* **US-11, US-13, US-17**
-
-  * Capas: `models/`, `viewmodels/`, `views/`
-  * Infraestructura: Next.js App Router, API desacoplada
+Por definir.
 
 ---
 
