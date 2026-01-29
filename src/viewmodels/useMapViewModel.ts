@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Event } from '../models';
 import { getEvents } from '../services/sanityService';
 
@@ -21,8 +21,22 @@ export function useMapViewModel() {
 
     // Filters
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [dateRange, setDateRange] = useState<{ start: string; end?: string } | null>(null);
     const [dateRangeLabel, setDateRangeLabel] = useState<string | null>(null);
+
+    // Derived state for available tags
+    const availableTags = useMemo(() => {
+        const uniqueTags = new Map<string, { name: string, slug: string }>();
+        allEvents.forEach(event => {
+            event.tags?.forEach(tag => {
+                if (!uniqueTags.has(tag.slug)) {
+                    uniqueTags.set(tag.slug, tag);
+                }
+            });
+        });
+        return Array.from(uniqueTags.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }, [allEvents]);
 
     useEffect(() => {
         getEvents()
@@ -42,6 +56,13 @@ export function useMapViewModel() {
         if (selectedCategories.length > 0) {
             result = result.filter(e =>
                 e.category && selectedCategories.includes(e.category.slug)
+            );
+        }
+
+        // Tags Filter (OR logic: match ANY selected tag)
+        if (selectedTags.length > 0) {
+            result = result.filter(e =>
+                e.tags && e.tags.some(tag => selectedTags.includes(tag.slug))
             );
         }
 
@@ -77,9 +98,14 @@ export function useMapViewModel() {
         // Filter actions
         selectedCategories,
         setSelectedCategories,
+        selectedTags,
+        setSelectedTags,
         dateRange,
         setDateRange,
         dateRangeLabel,
-        setDateRangeLabel
+        setDateRangeLabel,
+
+        // Exposed Data
+        availableTags
     };
 }

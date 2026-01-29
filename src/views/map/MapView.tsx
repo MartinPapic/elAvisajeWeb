@@ -7,6 +7,7 @@ import Supercluster from 'supercluster';
 import { useMapViewModel } from '@/viewmodels/useMapViewModel';
 import { CategoryFilter } from '../filters/CategoryFilter';
 import { DateFilter } from '../filters/DateFilter';
+import { TagsFilter } from '../filters/TagsFilter';
 import { EventListPopup } from '@/components/EventListPopup';
 import { groupEventsByLocation, eventsToGeoJSON } from '@/lib/clusterUtils';
 import { Event } from '@/models';
@@ -16,7 +17,9 @@ export function MapView() {
     const {
         viewState, setViewState, events, allEvents,
         selectedCategories, setSelectedCategories,
-        dateRangeLabel, setDateRangeLabel, setDateRange
+        selectedTags, setSelectedTags,
+        dateRangeLabel, setDateRangeLabel, setDateRange,
+        availableTags
     } = useMapViewModel();
 
     const mapContainer = useRef<HTMLDivElement>(null);
@@ -340,6 +343,15 @@ export function MapView() {
                         events={allEvents}
                         selectedCategories={selectedCategories}
                         onSelectCategories={setSelectedCategories}
+                    />
+                </div>
+
+                {/* Tags Filter */}
+                <div className="pointer-events-auto">
+                    <TagsFilter
+                        tags={availableTags}
+                        selectedTags={selectedTags}
+                        onSelectTags={setSelectedTags}
                     />
                 </div>
             </div>
